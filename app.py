@@ -13,6 +13,21 @@ import time
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Ellipse
 
+# Check if we're running in production (Render)
+if 'GOOGLE_APPLICATION_CREDENTIALS_JSON' in os.environ:
+    # Create a temporary file with the credentials
+    credentials_content = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS_JSON')
+    credentials_path = 'google-credentials-temp.json'
+    
+    with open(credentials_path, 'w') as f:
+        f.write(credentials_content)
+        
+    # Set environment variable to point to this file
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
+else:
+    # Local development using the file directly
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'upsl-video-api-c5071e2d09bf.json'
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = SECRET_KEY
 app.config['DEBUG'] = DEBUG
