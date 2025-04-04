@@ -8,4 +8,4 @@ GCP_BUCKET_STATS = "upsl_match_stats"
 
 # Flask configuration
 SECRET_KEY = os.urandom(24)
-DEBUG = True 
+DEBUG = True

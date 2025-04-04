@@ -20,7 +20,7 @@ def get_storage_client():
 def list_divisions():
     """List all divisions in the bucket"""
     try:
-        logger.info(f"Getting storage client with credentials from {GCP_CREDENTIAL_FILE}")
+        logger.info("Getting storage client")
         client = get_storage_client()
         
         logger.info(f"Getting bucket: {GCP_BUCKET_VIDEOS}")
