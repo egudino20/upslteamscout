@@ -1,12 +1,13 @@
 from google.cloud import storage
 import json
 import os
-from config import GCP_CREDENTIAL_FILE, GCP_BUCKET_VIDEOS, GCP_BUCKET_STATS
+from config import GCP_BUCKET_VIDEOS, GCP_BUCKET_STATS
 import logging
 from utils.cache import get_from_cache, save_to_cache
 
-# Set up Google Cloud credentials
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GCP_CREDENTIAL_FILE
+# Don't set the credentials path here - it's already set in app.py
+# Remove or comment out this line:
+# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GCP_CREDENTIAL_FILE
 
 # Add this at the top of your file
 logging.basicConfig(level=logging.INFO)

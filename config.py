@@ -1,7 +1,8 @@
 import os
 
 # Google Cloud configuration
-GCP_CREDENTIAL_FILE = "upsl-video-api-c5071e2d09bf.json"
+# Remove the hardcoded path since we handle credentials in app.py
+# GCP_CREDENTIAL_FILE = "upsl-video-api-c5071e2d09bf.json"
 GCP_BUCKET_VIDEOS = "upsl_match_videos"
 GCP_BUCKET_STATS = "upsl_match_stats"
 
