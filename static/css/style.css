@@ -1,0 +1,175 @@
+/* Global styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+a {
+    color: #2c3e50;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #3498db;
+}
+
+.content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Navigation */
+.main-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #2c3e50;
+    padding: 10px 20px;
+    color: white;
+}
+
+.nav-left, .nav-right {
+    display: flex;
+    align-items: center;
+}
+
+.logo img {
+    height: 40px;
+    margin-right: 20px;
+}
+
+.nav-item {
+    color: white;
+    padding: 10px 15px;
+    margin: 0 5px;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.nav-item:hover, .nav-item.active {
+    background-color: #34495e;
+}
+
+/* Dropdown Menu */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 200px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a {
+    color: #333;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+/* Home Page */
+.home-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.rankings-section {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.filter-tabs {
+    display: flex;
+    overflow-x: auto;
+    margin: 15px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.filter-tab {
+    background: none;
+    border: none;
+    padding: 10px 15px;
+    margin-right: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #666;
+    border-bottom: 2px solid transparent;
+}
+
+.filter-tab.active {
+    color: #3498db;
+    border-bottom: 2px solid #3498db;
+}
+
+.rankings-table-container {
+    overflow-y: auto;
+    max-height: 400px;
+}
+
+.ai-chatbot-section {
+    grid-column: 1 / span 2;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+}
+
+.coming-soon {
+    text-align: center;
+    padding: 40px 20px;
+    color: #777;
+}
+
+.coming-soon h3 {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: #3498db;
+}
+
+/* Footer */
+footer {
+    margin-top: 40px;
+    padding: 20px;
+    background-color: #2c3e50;
+    color: white;
+    text-align: center;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .home-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .ai-chatbot-section {
+        grid-column: 1;
+    }
+} 

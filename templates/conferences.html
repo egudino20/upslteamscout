@@ -1,0 +1,52 @@
+{% extends 'layout.html' %}
+
+{% block title %}UPSL Team Scout - Conferences{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/conferences.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="conferences-container">
+    <h1>Conferences</h1>
+    
+    <div id="loading-indicator" class="loading">
+        <div class="spinner"></div>
+        <p>Loading conferences... Please wait.</p>
+    </div>
+    
+    <div id="conferences-listing" class="conferences-listing" style="display: none;">
+        {% for division, conferences in division_conferences.items() %}
+        <div class="division-section">
+            <h2 class="division-title">{{ division }}</h2>
+            
+            <div class="conferences-grid">
+                {% for conference in conferences %}
+                <a href="{{ url_for('conference_page', division=division, conference=conference) }}" class="conference-card">
+                    <div class="conference-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="conference-name">{{ conference }}</h3>
+                    <p class="conference-info">View all teams</p>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show loading indicator initially
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const conferencesListing = document.getElementById('conferences-listing');
+    
+    // Once the page is fully loaded, hide the loading indicator
+    window.addEventListener('load', function() {
+        loadingIndicator.style.display = 'none';
+        conferencesListing.style.display = 'block';
+    });
+});
+</script>
+{% endblock %} 

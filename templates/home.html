@@ -1,0 +1,51 @@
+{% extends 'layout.html' %}
+
+{% block title %}UPSL Team Scout - Home{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <div class="rankings-section">
+        <h2>Player Rankings</h2>
+        <div class="filter-tabs">
+            <button class="filter-tab active" data-filter="all">All</button>
+            <button class="filter-tab" data-filter="gk">GK</button>
+            <button class="filter-tab" data-filter="mf">MF</button>
+            <button class="filter-tab" data-filter="winger">Winger</button>
+            <button class="filter-tab" data-filter="fw">FW</button>
+            <button class="filter-tab" data-filter="lbrb">LB/RB</button>
+            <button class="filter-tab" data-filter="cb">CB</button>
+        </div>
+        <div class="rankings-table-container">
+            <div class="coming-soon">
+                <h3>Coming Soon</h3>
+                <p>Player rankings will be available in a future update.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="rankings-section">
+        <h2>Team Rankings</h2>
+        <div class="filter-tabs">
+            <button class="filter-tab active" data-filter="all-time">All-Time Record</button>
+            <button class="filter-tab" data-filter="form">Current Form</button>
+            <button class="filter-tab" data-filter="gd">GD/xGD</button>
+        </div>
+        <div class="rankings-table-container">
+            <div class="coming-soon">
+                <h3>Coming Soon</h3>
+                <p>Team rankings will be available in a future update.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="ai-chatbot-section">
+        <h2>UPSL Scout AI Tool</h2>
+        <div class="chatbot-container">
+            <div class="coming-soon">
+                <h3>Coming Soon</h3>
+                <p>Our AI-powered chat assistant will be available in a future update.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,195 @@
+.club-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+}
+
+.club-header {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+}
+
+.club-header h1 {
+    font-size: 28px;
+    margin-bottom: 5px;
+}
+
+.club-info {
+    color: #666;
+    font-size: 14px;
+}
+
+.tabs-container {
+    margin-bottom: 20px;
+}
+
+.tabs {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+}
+
+.tab {
+    padding: 10px 20px;
+    margin-right: 5px;
+    border-bottom: 2px solid transparent;
+    font-weight: 500;
+}
+
+.tab.active {
+    color: #3498db;
+    border-bottom: 2px solid #3498db;
+}
+
+.club-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.formation-container {
+    grid-column: 1 / span 2;
+}
+
+.formation-container h2, .team-style-container h2, .recent-videos h2 {
+    margin-bottom: 15px;
+    font-size: 20px;
+    color: #2c3e50;
+}
+
+.pitch {
+    background-image: url('/static/images/soccer_field.jpg');
+    background-size: cover;
+    background-position: center;
+    height: 400px;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.player {
+    position: absolute;
+    transform: translate(-50%, -50%);
+}
+
+.player-dot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    cursor: pointer;
+}
+
+.player-info {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+    display: none;
+}
+
+.player:hover .player-info {
+    display: block;
+}
+
+.radar-chart-container {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    height: 300px;
+}
+
+.videos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.video-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+    cursor: pointer;
+}
+
+.video-card:hover {
+    transform: translateY(-5px);
+}
+
+.video-thumbnail {
+    height: 120px;
+    background-color: #2c3e50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 30px;
+}
+
+.video-info {
+    padding: 10px;
+}
+
+.video-info h3 {
+    font-size: 14px;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.video-info p {
+    font-size: 12px;
+    color: #666;
+}
+
+.no-videos {
+    grid-column: 1 / span 2;
+    text-align: center;
+    padding: 20px;
+    color: #666;
+}
+
+.see-all {
+    grid-column: 1 / span 2;
+    text-align: center;
+    margin-top: 15px;
+}
+
+.see-all a {
+    display: inline-block;
+    padding: 8px 20px;
+    background-color: #3498db;
+    color: white;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.see-all a:hover {
+    background-color: #2980b9;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .club-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .formation-container {
+        grid-column: 1;
+    }
+} 

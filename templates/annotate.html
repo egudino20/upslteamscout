@@ -1,0 +1,497 @@
+{% extends 'layout.html' %}
+
+{% block title %}Annotate - {{ team.name }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/annotate.css') }}">
+{% endblock %}
+
+{% block content %}
+<input type="hidden" id="frameDataUrl" value="{{ frame }}" />
+<div class="annotate-container">
+    <div class="annotate-header">
+        <h1>{{ team.name }} - Annotate Frame</h1>
+        <div class="frame-info">
+            <span>Video: {{ video_id }}</span>
+            <span>Time: {{ timestamp }}</span>
+        </div>
+    </div>
+
+    <div class="annotate-toolbar">
+        <button id="saveBtn"><i class="fas fa-save"></i> Save Drawing</button>
+        <button id="undoBtn"><i class="fas fa-undo"></i> Undo</button>
+        <button id="redoBtn"><i class="fas fa-redo"></i> Redo</button>
+        <div class="tool-separator"></div>
+        <div class="line-style-picker">
+            <label>Line Style:</label>
+            <select id="lineStyle">
+                <option value="solid">Solid</option>
+                <option value="dashed">Dashed</option>
+                <option value="dotted">Dotted</option>
+            </select>
+        </div>
+        <div class="line-width-picker">
+            <label>Line Width:</label>
+            <input type="range" id="lineWidth" min="1" max="10" value="3">
+        </div>
+        <div class="color-picker">
+            <label>Color:</label>
+            <input type="color" id="lineColor" value="#ff0000">
+        </div>
+    </div>
+
+    <div class="annotation-area">
+        <div class="annotation-sidebar">
+            <h3>Tools</h3>
+            <div class="annotation-tools">
+                <button class="tool-btn" id="selectTool" title="Select"><i class="fas fa-mouse-pointer"></i></button>
+                <button class="tool-btn" id="playerAnnotationTool" title="Player Annotation"><i class="fas fa-user-circle"></i></button>
+                <button class="tool-btn" id="connectedPlayerTool" title="Connected Players"><i class="fas fa-users"></i></button>
+                <button class="tool-btn" id="straightArrowTool" title="Straight Pass"><i class="fas fa-arrow-right"></i></button>
+                <button class="tool-btn" id="curvedArrowTool" title="Curved Pass"><i class="fas fa-project-diagram"></i></button>
+                <button class="tool-btn" id="areaAnnotationTool" title="Area Annotation"><i class="fas fa-vector-square"></i></button>
+                <button class="tool-btn" id="textAnnotationTool" title="Add Text"><i class="fas fa-font"></i></button>
+            </div>
+            <button id="exportBtn" class="export-btn"><i class="fas fa-file-export"></i> Export PNG</button>
+        </div>
+        <div class="annotation-canvas-container">
+            <canvas id="annotationCanvas" width="800" height="450">
+                Your browser does not support the canvas element.
+            </canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Variables to store the canvas state
+    const canvas = document.getElementById('annotationCanvas');
+    const ctx = canvas.getContext('2d');
+    let currentTool = 'select';
+    let isDrawing = false;
+    let startX, startY;
+    let objects = [];
+    let selectedObject = null;
+    let redoStack = [];
+    
+    // Mock frame image - in production this would be a frame from the video
+    const frameImage = new Image();
+    frameImage.src = "{{ url_for('static', filename='images/soccer_field.jpg') }}";
+    frameImage.onload = function() {
+        // Draw the frame image once it's loaded
+        ctx.drawImage(frameImage, 0, 0, canvas.width, canvas.height);
+    };
+    
+    // Initialize the canvas when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set up tool buttons
+        const toolButtons = document.querySelectorAll('.tool-btn');
+        toolButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                toolButtons.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentTool = this.id.replace('Tool', '');
+            });
+        });
+        
+        // Set up the select tool as active by default
+        document.getElementById('selectTool').classList.add('active');
+        
+        // Set up line style, width, and color pickers
+        document.getElementById('lineStyle').addEventListener('change', updateLineStyle);
+        document.getElementById('lineWidth').addEventListener('input', updateLineWidth);
+        document.getElementById('lineColor').addEventListener('input', updateLineColor);
+        
+        // Set up undo and redo buttons
+        document.getElementById('undoBtn').addEventListener('click', undo);
+        document.getElementById('redoBtn').addEventListener('click', redo);
+        
+        // Set up save button
+        document.getElementById('saveBtn').addEventListener('click', saveDrawing);
+        
+        // Set up export button
+        document.getElementById('exportBtn').addEventListener('click', exportPNG);
+        
+        // Set up canvas event listeners
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+    });
+    
+    // Function to start drawing
+    function startDrawing(e) {
+        isDrawing = true;
+        
+        // Get the canvas position relative to the window
+        const rect = canvas.getBoundingClientRect();
+        startX = e.clientX - rect.left;
+        startY = e.clientY - rect.top;
+        
+        // Handle different tools
+        if (currentTool === 'playerAnnotation') {
+            // Create a new player annotation at the clicked position
+            const playerObj = {
+                type: 'playerAnnotation',
+                x: startX,
+                y: startY,
+                radius: 20,
+                color: document.getElementById('lineColor').value
+            };
+            
+            objects.push(playerObj);
+            redoStack = []; // Clear redo stack when a new action is performed
+            redraw();
+        } else if (currentTool === 'textAnnotation') {
+            // Prompt for text input
+            const text = prompt('Enter text:', '');
+            if (text) {
+                const textObj = {
+                    type: 'textAnnotation',
+                    x: startX,
+                    y: startY,
+                    text: text,
+                    color: document.getElementById('lineColor').value,
+                    fontSize: parseInt(document.getElementById('lineWidth').value) * 4
+                };
+                
+                objects.push(textObj);
+                redoStack = []; // Clear redo stack when a new action is performed
+                redraw();
+            }
+        }
+    }
+    
+    // Function to draw
+    function draw(e) {
+        if (!isDrawing) return;
+        
+        // Get the canvas position relative to the window
+        const rect = canvas.getBoundingClientRect();
+        const currentX = e.clientX - rect.left;
+        const currentY = e.clientY - rect.top;
+        
+        // Handle different tools
+        if (currentTool === 'straightArrow' || currentTool === 'curvedArrow' || currentTool === 'areaAnnotation' || currentTool === 'connectedPlayer') {
+            // Redraw the canvas to show the current drawing state
+            redraw();
+            
+            // Draw the current shape being created
+            ctx.beginPath();
+            ctx.strokeStyle = document.getElementById('lineColor').value;
+            ctx.lineWidth = document.getElementById('lineWidth').value;
+            
+            if (document.getElementById('lineStyle').value === 'dashed') {
+                ctx.setLineDash([5, 5]);
+            } else if (document.getElementById('lineStyle').value === 'dotted') {
+                ctx.setLineDash([2, 2]);
+            } else {
+                ctx.setLineDash([]);
+            }
+            
+            if (currentTool === 'straightArrow') {
+                // Draw a straight line with an arrow head
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(currentX, currentY);
+                
+                // Calculate arrow head
+                const headLen = 15;
+                const angle = Math.atan2(currentY - startY, currentX - startX);
+                
+                ctx.lineTo(
+                    currentX - headLen * Math.cos(angle - Math.PI / 6),
+                    currentY - headLen * Math.sin(angle - Math.PI / 6)
+                );
+                ctx.moveTo(currentX, currentY);
+                ctx.lineTo(
+                    currentX - headLen * Math.cos(angle + Math.PI / 6),
+                    currentY - headLen * Math.sin(angle + Math.PI / 6)
+                );
+            } else if (currentTool === 'curvedArrow') {
+                // Draw a curved line (quadratic curve)
+                const controlX = (startX + currentX) / 2;
+                const controlY = Math.min(startY, currentY) - 30;
+                
+                ctx.moveTo(startX, startY);
+                ctx.quadraticCurveTo(controlX, controlY, currentX, currentY);
+                
+                // Add arrow head
+                const headLen = 15;
+                const angle = Math.atan2(currentY - controlY, currentX - controlX);
+                
+                ctx.lineTo(
+                    currentX - headLen * Math.cos(angle - Math.PI / 6),
+                    currentY - headLen * Math.sin(angle - Math.PI / 6)
+                );
+                ctx.moveTo(currentX, currentY);
+                ctx.lineTo(
+                    currentX - headLen * Math.cos(angle + Math.PI / 6),
+                    currentY - headLen * Math.sin(angle + Math.PI / 6)
+                );
+            } else if (currentTool === 'areaAnnotation') {
+                // Draw a rectangle
+                const width = currentX - startX;
+                const height = currentY - startY;
+                
+                ctx.rect(startX, startY, width, height);
+            } else if (currentTool === 'connectedPlayer') {
+                // Draw a line connecting two players
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(currentX, currentY);
+            }
+            
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+    }
+    
+    // Function to stop drawing
+    function stopDrawing(e) {
+        if (!isDrawing) return;
+        
+        // Get the canvas position relative to the window
+        const rect = canvas.getBoundingClientRect();
+        const endX = e.clientX - rect.left;
+        const endY = e.clientY - rect.top;
+        
+        // Handle different tools
+        if (currentTool === 'straightArrow') {
+            const arrowObj = {
+                type: 'straightArrow',
+                startX: startX,
+                startY: startY,
+                endX: endX,
+                endY: endY,
+                color: document.getElementById('lineColor').value,
+                width: document.getElementById('lineWidth').value,
+                style: document.getElementById('lineStyle').value
+            };
+            
+            objects.push(arrowObj);
+        } else if (currentTool === 'curvedArrow') {
+            const controlX = (startX + endX) / 2;
+            const controlY = Math.min(startY, endY) - 30;
+            
+            const curvedArrowObj = {
+                type: 'curvedArrow',
+                startX: startX,
+                startY: startY,
+                endX: endX,
+                endY: endY,
+                controlX: controlX,
+                controlY: controlY,
+                color: document.getElementById('lineColor').value,
+                width: document.getElementById('lineWidth').value,
+                style: document.getElementById('lineStyle').value
+            };
+            
+            objects.push(curvedArrowObj);
+        } else if (currentTool === 'areaAnnotation') {
+            const areaObj = {
+                type: 'areaAnnotation',
+                x: startX,
+                y: startY,
+                width: endX - startX,
+                height: endY - startY,
+                color: document.getElementById('lineColor').value,
+                lineWidth: document.getElementById('lineWidth').value,
+                style: document.getElementById('lineStyle').value
+            };
+            
+            objects.push(areaObj);
+        } else if (currentTool === 'connectedPlayer') {
+            const connectionObj = {
+                type: 'connectedPlayer',
+                startX: startX,
+                startY: startY,
+                endX: endX,
+                endY: endY,
+                color: document.getElementById('lineColor').value,
+                width: document.getElementById('lineWidth').value,
+                style: document.getElementById('lineStyle').value
+            };
+            
+            objects.push(connectionObj);
+        }
+        
+        isDrawing = false;
+        redoStack = []; // Clear redo stack when a new action is performed
+        redraw();
+    }
+    
+    // Function to redraw the canvas with all objects
+    function redraw() {
+        // Clear the canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw the frame image
+        ctx.drawImage(frameImage, 0, 0, canvas.width, canvas.height);
+        
+        // Draw all objects
+        objects.forEach(obj => {
+            if (obj.type === 'playerAnnotation') {
+                // Draw a circle for player annotation
+                ctx.beginPath();
+                ctx.strokeStyle = obj.color;
+                ctx.lineWidth = 2;
+                ctx.setLineDash([]);
+                ctx.arc(obj.x, obj.y, obj.radius, 0, 2 * Math.PI);
+                ctx.stroke();
+            } else if (obj.type === 'straightArrow') {
+                // Draw a straight arrow
+                ctx.beginPath();
+                ctx.strokeStyle = obj.color;
+                ctx.lineWidth = obj.width;
+                
+                if (obj.style === 'dashed') {
+                    ctx.setLineDash([5, 5]);
+                } else if (obj.style === 'dotted') {
+                    ctx.setLineDash([2, 2]);
+                } else {
+                    ctx.setLineDash([]);
+                }
+                
+                ctx.moveTo(obj.startX, obj.startY);
+                ctx.lineTo(obj.endX, obj.endY);
+                
+                // Add arrow head
+                const headLen = 15;
+                const angle = Math.atan2(obj.endY - obj.startY, obj.endX - obj.startX);
+                
+                ctx.lineTo(
+                    obj.endX - headLen * Math.cos(angle - Math.PI / 6),
+                    obj.endY - headLen * Math.sin(angle - Math.PI / 6)
+                );
+                ctx.moveTo(obj.endX, obj.endY);
+                ctx.lineTo(
+                    obj.endX - headLen * Math.cos(angle + Math.PI / 6),
+                    obj.endY - headLen * Math.sin(angle + Math.PI / 6)
+                );
+                
+                ctx.stroke();
+                ctx.setLineDash([]);
+            } else if (obj.type === 'curvedArrow') {
+                // Draw a curved arrow
+                ctx.beginPath();
+                ctx.strokeStyle = obj.color;
+                ctx.lineWidth = obj.width;
+                
+                if (obj.style === 'dashed') {
+                    ctx.setLineDash([5, 5]);
+                } else if (obj.style === 'dotted') {
+                    ctx.setLineDash([2, 2]);
+                } else {
+                    ctx.setLineDash([]);
+                }
+                
+                ctx.moveTo(obj.startX, obj.startY);
+                ctx.quadraticCurveTo(obj.controlX, obj.controlY, obj.endX, obj.endY);
+                
+                // Add arrow head
+                const headLen = 15;
+                const angle = Math.atan2(obj.endY - obj.controlY, obj.endX - obj.controlX);
+                
+                ctx.lineTo(
+                    obj.endX - headLen * Math.cos(angle - Math.PI / 6),
+                    obj.endY - headLen * Math.sin(angle - Math.PI / 6)
+                );
+                ctx.moveTo(obj.endX, obj.endY);
+                ctx.lineTo(
+                    obj.endX - headLen * Math.cos(angle + Math.PI / 6),
+                    obj.endY - headLen * Math.sin(angle + Math.PI / 6)
+                );
+                
+                ctx.stroke();
+                ctx.setLineDash([]);
+            } else if (obj.type === 'areaAnnotation') {
+                // Draw a rectangle
+                ctx.beginPath();
+                ctx.strokeStyle = obj.color;
+                ctx.lineWidth = obj.lineWidth;
+                
+                if (obj.style === 'dashed') {
+                    ctx.setLineDash([5, 5]);
+                } else if (obj.style === 'dotted') {
+                    ctx.setLineDash([2, 2]);
+                } else {
+                    ctx.setLineDash([]);
+                }
+                
+                ctx.rect(obj.x, obj.y, obj.width, obj.height);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            } else if (obj.type === 'connectedPlayer') {
+                // Draw a line connecting players
+                ctx.beginPath();
+                ctx.strokeStyle = obj.color;
+                ctx.lineWidth = obj.width;
+                
+                if (obj.style === 'dashed') {
+                    ctx.setLineDash([5, 5]);
+                } else if (obj.style === 'dotted') {
+                    ctx.setLineDash([2, 2]);
+                } else {
+                    ctx.setLineDash([]);
+                }
+                
+                ctx.moveTo(obj.startX, obj.startY);
+                ctx.lineTo(obj.endX, obj.endY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            } else if (obj.type === 'textAnnotation') {
+                // Draw text
+                ctx.font = `${obj.fontSize}px Arial`;
+                ctx.fillStyle = obj.color;
+                ctx.fillText(obj.text, obj.x, obj.y);
+            }
+        });
+    }
+    
+    // Function to update the line style
+    function updateLineStyle() {
+        redraw();
+    }
+    
+    // Function to update the line width
+    function updateLineWidth() {
+        redraw();
+    }
+    
+    // Function to update the line color
+    function updateLineColor() {
+        redraw();
+    }
+    
+    // Function to undo the last action
+    function undo() {
+        if (objects.length === 0) return;
+        
+        redoStack.push(objects.pop());
+        redraw();
+    }
+    
+    // Function to redo the last undone action
+    function redo() {
+        if (redoStack.length === 0) return;
+        
+        objects.push(redoStack.pop());
+        redraw();
+    }
+    
+    // Function to save the drawing
+    function saveDrawing() {
+        // Mock saving functionality
+        alert('Drawing saved! In a real implementation, this would be saved to the database and added to the video tags list.');
+    }
+    
+    // Function to export the drawing as PNG
+    function exportPNG() {
+        const dataURL = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = dataURL;
+        link.download = `annotation_${new Date().getTime()}.png`;
+        link.click();
+    }
+</script>
+{% endblock %} 

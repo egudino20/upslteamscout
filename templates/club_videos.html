@@ -1,0 +1,42 @@
+<!-- Add a loading indicator at the top of the video list section -->
+<div id="loading-indicator" class="loading">
+    <div class="spinner"></div>
+    <p>Loading videos... Please wait.</p>
+</div>
+
+<div id="videos-list" class="videos-list" style="display: none;">
+    <!-- Existing video list content -->
+</div>
+
+<!-- Add a placeholder soccer field image -->
+<div style="display:none">
+    <img id="soccer-field-placeholder" src="{{ url_for('static', filename='images/soccer_field.jpg') }}" alt="Soccer Field">
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show loading indicator initially
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const videosList = document.getElementById('videos-list');
+    
+    // Once the page is fully loaded, hide the loading indicator
+    window.addEventListener('load', function() {
+        loadingIndicator.style.display = 'none';
+        videosList.style.display = 'block';
+    });
+    
+    // Add video IDs to the player
+    const videoPlayer = document.getElementById('videoPlayer');
+    if (videoPlayer) {
+        const videoItems = document.querySelectorAll('.video-item');
+        videoItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const videoId = this.dataset.id;
+                if (videoPlayer) {
+                    videoPlayer.dataset.videoId = videoId;
+                }
+            });
+        });
+    }
+});
+</script> 

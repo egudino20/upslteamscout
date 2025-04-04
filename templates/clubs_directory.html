@@ -1,0 +1,57 @@
+{% extends 'layout.html' %}
+
+{% block title %}UPSL Team Scout - Clubs Directory{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/clubs_directory.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="clubs-directory-container">
+    <h1>Clubs Directory</h1>
+    
+    <div id="loading-indicator" class="loading">
+        <div class="spinner"></div>
+        <p>Loading clubs... Please wait.</p>
+    </div>
+    
+    <div id="clubs-listing" class="clubs-listing" style="display: none;">
+        {% for division, conferences in clubs.items() %}
+        <div class="division-section">
+            <h2 class="division-title">{{ division }}</h2>
+            
+            {% for conference, teams in conferences.items() %}
+            <div class="conference-section">
+                <h3 class="conference-title">{{ conference }}</h3>
+                
+                <div class="teams-grid">
+                    {% for team in teams %}
+                    <a href="{{ url_for('club_page', team=team) }}" class="team-card">
+                        <div class="team-logo">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4 class="team-name">{{ team }}</h4>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Show loading indicator initially
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const clubsListing = document.getElementById('clubs-listing');
+    
+    // Once the page is fully loaded, hide the loading indicator
+    window.addEventListener('load', function() {
+        loadingIndicator.style.display = 'none';
+        clubsListing.style.display = 'block';
+    });
+});
+</script>
+{% endblock %} 

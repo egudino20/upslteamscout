@@ -1,0 +1,167 @@
+{% extends 'layout.html' %}
+
+{% block title %}{{ team.name }} - UPSL Team Scout{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/clubs.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="club-container">
+    <div class="club-header">
+        <h1>{{ team.name }}</h1>
+        <div class="club-info">
+            <span class="division">{{ team.division }}</span> | 
+            <span class="conference">{{ team.conference }}</span>
+        </div>
+    </div>
+
+    <div class="tabs-container">
+        <div class="tabs">
+            <a href="{{ url_for('club_page', team=team.name) }}" class="tab active">Overview</a>
+            <a href="{{ url_for('video_library', team=team.name) }}" class="tab">Video Library</a>
+        </div>
+    </div>
+
+    <div class="club-content">
+        <div class="formation-container">
+            <h2>Team Lineup</h2>
+            <div class="pitch">
+                {% for player in roster %}
+                <div class="player" data-position="{{ player.position }}">
+                    <div class="player-dot" style="background-color: rgba({{ (10 - player.rating) * 25 }}, {{ player.rating * 25 }}, 0, 0.8);">
+                        <span class="player-initials">{{ player.name[:2] }}</span>
+                    </div>
+                    <div class="player-info">
+                        <span class="player-name">{{ player.name }}</span>
+                        <span class="player-rating">{{ player.rating }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="team-style-container">
+            <h2>Team Style</h2>
+            <div class="radar-chart-container">
+                <canvas id="teamStyleRadar"></canvas>
+            </div>
+        </div>
+
+        <div class="recent-videos">
+            <h2>Recent Videos</h2>
+            <div class="videos-grid">
+                {% if videos %}
+                    {% for video in videos[:4] %}
+                    <div class="video-card">
+                        <div class="video-thumbnail">
+                            <i class="fas fa-play-circle"></i>
+                        </div>
+                        <div class="video-info">
+                            <h3>{{ video.name }}</h3>
+                            <p>{{ video.updated.strftime('%m/%d/%Y') }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-videos">
+                        <p>No videos available for this team</p>
+                    </div>
+                {% endif %}
+                <div class="see-all">
+                    <a href="{{ url_for('video_library', team=team.name) }}">See All Videos</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // Position players according to formation
+    document.addEventListener('DOMContentLoaded', function() {
+        // 4-3-3 formation positioning
+        const positions = {
+            'GK': { top: '90%', left: '50%' },
+            'LB': { top: '70%', left: '20%' },
+            'CB': { top: '70%', left: '40%' },
+            'CB2': { top: '70%', left: '60%' },
+            'RB': { top: '70%', left: '80%' },
+            'CDM': { top: '50%', left: '50%' },
+            'CM': { top: '40%', left: '30%' },
+            'CAM': { top: '40%', left: '70%' },
+            'LW': { top: '20%', left: '20%' },
+            'RW': { top: '20%', left: '80%' },
+            'ST': { top: '10%', left: '50%' }
+        };
+
+        // Setup players
+        const players = document.querySelectorAll('.player');
+        let cbCount = 0;
+        
+        players.forEach(player => {
+            const position = player.dataset.position;
+            let posKey = position;
+            
+            // Handle multiple CBs
+            if (position === 'CB') {
+                posKey = cbCount === 0 ? 'CB' : 'CB2';
+                cbCount++;
+            }
+            
+            if (positions[posKey]) {
+                player.style.top = positions[posKey].top;
+                player.style.left = positions[posKey].left;
+            }
+        });
+
+        // Create radar chart
+        const ctx = document.getElementById('teamStyleRadar').getContext('2d');
+        const teamStyleRadar = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Possession', 'Attacking', 'Defending', 'Pressing', 'Passing'],
+                datasets: [{
+                    label: '{{ team.name }}',
+                    data: [
+                        {{ team_style.possession }},
+                        {{ team_style.attacking }},
+                        {{ team_style.defending }},
+                        {{ team_style.pressing }},
+                        {{ team_style.passing }}
+                    ],
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgb(54, 162, 235)',
+                    pointBackgroundColor: 'rgb(54, 162, 235)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(54, 162, 235)'
+                }, {
+                    label: 'Conference Average',
+                    data: [50, 50, 50, 50, 50],
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgb(255, 99, 132)',
+                    pointBackgroundColor: 'rgb(255, 99, 132)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgb(255, 99, 132)'
+                }]
+            },
+            options: {
+                elements: {
+                    line: {
+                        borderWidth: 3
+                    }
+                },
+                scale: {
+                    ticks: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %} 

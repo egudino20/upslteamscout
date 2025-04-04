@@ -1,0 +1,296 @@
+{% extends 'layout.html' %}
+
+{% block title %}{{ team.name }} - Video Library{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/video_library.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="video-library-container">
+    <div class="club-header">
+        <h1>{{ team.name }}</h1>
+        <div class="club-info">
+            <span class="division">{{ team.division }}</span> | 
+            <span class="conference">{{ team.conference }}</span>
+        </div>
+    </div>
+
+    <div class="tabs-container">
+        <div class="tabs">
+            <a href="{{ url_for('club_page', team=team.name) }}" class="tab">Overview</a>
+            <a href="{{ url_for('video_library', team=team.name) }}" class="tab active">Video Library</a>
+        </div>
+    </div>
+
+    <div class="video-library-content">
+        <div class="video-sidebar">
+            <h2>Match Videos</h2>
+            <div class="season-list">
+                {% for season, videos in videos_by_season.items() %}
+                <div class="season-item">
+                    <div class="season-header" onclick="toggleSeason(this)">
+                        <i class="fas fa-chevron-right"></i>
+                        <span>{{ season }}</span>
+                    </div>
+                    <div class="season-videos">
+                        {% for video in videos %}
+                        <div class="video-item" onclick="loadVideo('{{ video.url }}', '{{ video.name }}')">
+                            <i class="fas fa-file-video"></i>
+                            <span>{{ video.name }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+                
+                {% if not videos_by_season %}
+                <div class="no-videos">
+                    <p>No videos available for this team</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="video-player-container">
+            <div class="video-player-header">
+                <h2 id="currentVideoTitle">Select a video to begin</h2>
+            </div>
+            <div class="video-player">
+                <video id="mainVideoPlayer" controls>
+                    <source src="" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <div class="video-controls">
+                    <button id="playBtn" onclick="togglePlay()"><i class="fas fa-play"></i></button>
+                    <button id="pauseBtn" onclick="togglePause()"><i class="fas fa-pause"></i></button>
+                    <button onclick="setPlaybackRate(1)">1x</button>
+                    <button onclick="setPlaybackRate(2)">2x</button>
+                    <button onclick="setPlaybackRate(3)">3x</button>
+                    <button onclick="rewind()"><i class="fas fa-backward"></i></button>
+                    <button onclick="fastForward()"><i class="fas fa-forward"></i></button>
+                    <button id="annotateBtn" onclick="annotateFrame()" disabled><i class="fas fa-pencil-alt"></i> Annotate</button>
+                </div>
+            </div>
+            <div class="video-tags">
+                <h3>Video Tags</h3>
+                <div class="video-tags-list" id="videoTagsList">
+                    <p class="no-tags">No tags created yet</p>
+                </div>
+                <div class="video-tag-controls">
+                    <button id="startRecordingBtn" onclick="startRecording()" disabled><i class="fas fa-record-vinyl"></i> Start Recording</button>
+                    <button id="stopRecordingBtn" onclick="stopRecording()" disabled><i class="fas fa-stop"></i> Stop Recording</button>
+                    <button id="exportBtn" onclick="exportContent()" disabled><i class="fas fa-file-export"></i> Export Content</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    let isRecording = false;
+    let currentVideoUrl = '';
+    let videoTags = [];
+    
+    function toggleSeason(element) {
+        const seasonVideos = element.nextElementSibling;
+        const icon = element.querySelector('i');
+        
+        if (seasonVideos.style.display === 'block') {
+            seasonVideos.style.display = 'none';
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-right');
+        } else {
+            seasonVideos.style.display = 'block';
+            icon.classList.remove('fa-chevron-right');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
+    
+    function loadVideo(url, title) {
+        const videoPlayer = document.getElementById('mainVideoPlayer');
+        const videoTitle = document.getElementById('currentVideoTitle');
+        const annotateBtn = document.getElementById('annotateBtn');
+        const startRecordingBtn = document.getElementById('startRecordingBtn');
+        
+        currentVideoUrl = url;
+        videoPlayer.src = url;
+        videoTitle.textContent = title;
+        videoPlayer.load();
+        
+        // Enable buttons
+        annotateBtn.disabled = false;
+        startRecordingBtn.disabled = false;
+    }
+    
+    function togglePlay() {
+        const video = document.getElementById('mainVideoPlayer');
+        if (video.paused) {
+            video.play();
+        }
+    }
+    
+    function togglePause() {
+        const video = document.getElementById('mainVideoPlayer');
+        if (!video.paused) {
+            video.pause();
+        }
+    }
+    
+    function setPlaybackRate(rate) {
+        const video = document.getElementById('mainVideoPlayer');
+        video.playbackRate = rate;
+    }
+    
+    function rewind() {
+        const video = document.getElementById('mainVideoPlayer');
+        video.currentTime -= 10;
+    }
+    
+    function fastForward() {
+        const video = document.getElementById('mainVideoPlayer');
+        video.currentTime += 10;
+    }
+    
+    function annotateFrame() {
+        const video = document.getElementById('mainVideoPlayer');
+        
+        if (!video.paused) {
+            video.pause();
+        }
+        
+        const currentTime = video.currentTime;
+        const videoId = currentVideoUrl.split('/').pop().split('.')[0];
+        
+        // Redirect to annotation page with video ID and timestamp
+        window.open(`/clubs/{{ team.name }}/annotateimg?video_id=${videoId}&timestamp=${currentTime}`, '_blank');
+    }
+    
+    function startRecording() {
+        if (currentVideoUrl === '') return;
+        
+        isRecording = true;
+        const startRecordingBtn = document.getElementById('startRecordingBtn');
+        const stopRecordingBtn = document.getElementById('stopRecordingBtn');
+        
+        startRecordingBtn.disabled = true;
+        stopRecordingBtn.disabled = false;
+        
+        // Show recording indicator
+        const video = document.getElementById('mainVideoPlayer');
+        const recordingIndicator = document.createElement('div');
+        recordingIndicator.id = 'recordingIndicator';
+        recordingIndicator.innerHTML = '<i class="fas fa-circle"></i> Recording...';
+        recordingIndicator.style.position = 'absolute';
+        recordingIndicator.style.top = '10px';
+        recordingIndicator.style.right = '10px';
+        recordingIndicator.style.color = 'red';
+        recordingIndicator.style.padding = '5px';
+        recordingIndicator.style.borderRadius = '3px';
+        recordingIndicator.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        
+        video.parentElement.appendChild(recordingIndicator);
+    }
+    
+    function stopRecording() {
+        if (!isRecording) return;
+        
+        isRecording = false;
+        const startRecordingBtn = document.getElementById('startRecordingBtn');
+        const stopRecordingBtn = document.getElementById('stopRecordingBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        
+        startRecordingBtn.disabled = false;
+        stopRecordingBtn.disabled = true;
+        exportBtn.disabled = false;
+        
+        // Remove recording indicator
+        const recordingIndicator = document.getElementById('recordingIndicator');
+        if (recordingIndicator) {
+            recordingIndicator.remove();
+        }
+        
+        // Prompt for clip name
+        const clipName = prompt('Enter a name for this clip:');
+        if (!clipName) return;
+        
+        const video = document.getElementById('mainVideoPlayer');
+        const currentTime = video.currentTime;
+        
+        // Add to tags list
+        addVideoTag(clipName, currentTime, 'clip');
+    }
+    
+    function addVideoTag(name, timestamp, type) {
+        const videoTagsList = document.getElementById('videoTagsList');
+        const noTagsMsg = videoTagsList.querySelector('.no-tags');
+        
+        if (noTagsMsg) {
+            noTagsMsg.remove();
+        }
+        
+        const tag = {
+            name,
+            timestamp,
+            type,
+            id: Date.now()
+        };
+        
+        videoTags.push(tag);
+        
+        const tagElement = document.createElement('div');
+        tagElement.className = 'video-tag';
+        tagElement.dataset.id = tag.id;
+        
+        const icon = type === 'clip' ? 'fa-film' : 'fa-image';
+        const formattedTime = formatTime(timestamp);
+        
+        tagElement.innerHTML = `
+            <i class="fas ${icon}"></i>
+            <span>${name}</span>
+            <span class="tag-time">${formattedTime}</span>
+            <button onclick="removeTag(${tag.id})"><i class="fas fa-times"></i></button>
+        `;
+        
+        videoTagsList.appendChild(tagElement);
+    }
+    
+    function removeTag(id) {
+        const index = videoTags.findIndex(tag => tag.id === id);
+        if (index !== -1) {
+            videoTags.splice(index, 1);
+        }
+        
+        const tagElement = document.querySelector(`.video-tag[data-id="${id}"]`);
+        if (tagElement) {
+            tagElement.remove();
+        }
+        
+        // If no tags left, show the "No tags" message
+        const videoTagsList = document.getElementById('videoTagsList');
+        if (videoTags.length === 0) {
+            const noTagsMsg = document.createElement('p');
+            noTagsMsg.className = 'no-tags';
+            noTagsMsg.textContent = 'No tags created yet';
+            videoTagsList.appendChild(noTagsMsg);
+        }
+    }
+    
+    function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs < 10 ? '0' + secs : secs}`;
+    }
+    
+    function exportContent() {
+        if (videoTags.length === 0) {
+            alert('No content to export');
+            return;
+        }
+        
+        alert('Export functionality coming soon!');
+    }
+</script>
+{% endblock %} 

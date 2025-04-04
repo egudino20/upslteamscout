@@ -1,0 +1,25 @@
+{% extends 'layout.html' %}
+
+{% block title %}UPSL Team Scout - {{ conference }} Conference{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/conference.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="conference-container">
+    <h1>{{ conference }} Conference</h1>
+    <h3 class="division-subtitle">{{ division }} Division</h3>
+    
+    <div class="clubs-grid">
+        {% for club in clubs %}
+        <a href="{{ url_for('club_page', team=club) }}" class="club-card">
+            <div class="club-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3 class="club-name">{{ club }}</h3>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

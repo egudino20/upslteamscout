@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}UPSL Team Scout{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <nav class="main-nav">
+        <div class="nav-left">
+            <a href="{{ url_for('home') }}" class="logo">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="UPSL Team Scout Logo">
+            </a>
+            <a href="{{ url_for('home') }}" class="nav-item {% if request.path == '/' %}active{% endif %}">Home</a>
+            <div class="dropdown">
+                <a href="{{ url_for('clubs_directory') }}" class="nav-item {% if '/clubs' in request.path %}active{% endif %}">Clubs</a>
+                <div class="dropdown-content">
+                    <!-- This will be populated via JavaScript -->
+                    <div id="clubs-dropdown-content">Loading...</div>
+                </div>
+            </div>
+            <div class="dropdown">
+                <a href="{{ url_for('conferences') }}" class="nav-item {% if '/conferences' in request.path %}active{% endif %}">Conferences</a>
+                <div class="dropdown-content">
+                    <!-- This will be populated via JavaScript -->
+                    <div id="competitions-dropdown-content">Loading...</div>
+                </div>
+            </div>
+        </div>
+        <div class="nav-right">
+            <a href="#" class="nav-item"><i class="fas fa-sign-in-alt"></i> Login</a>
+            <a href="#" class="nav-item"><i class="fas fa-cog"></i> Settings</a>
+        </div>
+    </nav>
+
+    <main class="content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; {{ current_year }} UPSL Team Scout. All rights reserved.</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html> 
