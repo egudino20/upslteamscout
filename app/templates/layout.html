@@ -12,24 +12,12 @@
 <body>
     <nav class="main-nav">
         <div class="nav-left">
-            <a href="{{ url_for('home') }}" class="logo">
+            <a href="{{ url_for('main.home') }}" class="logo">
                 <img src="{{ url_for('static', filename='images/logo.png') }}" alt="UPSL Team Scout Logo">
             </a>
-            <a href="{{ url_for('home') }}" class="nav-item {% if request.path == '/' %}active{% endif %}">Home</a>
-            <div class="dropdown">
-                <a href="{{ url_for('clubs_directory') }}" class="nav-item {% if '/clubs' in request.path %}active{% endif %}">Clubs</a>
-                <div class="dropdown-content">
-                    <!-- This will be populated via JavaScript -->
-                    <div id="clubs-dropdown-content">Loading...</div>
-                </div>
-            </div>
-            <div class="dropdown">
-                <a href="{{ url_for('conferences') }}" class="nav-item {% if '/conferences' in request.path %}active{% endif %}">Conferences</a>
-                <div class="dropdown-content">
-                    <!-- This will be populated via JavaScript -->
-                    <div id="competitions-dropdown-content">Loading...</div>
-                </div>
-            </div>
+            <a href="{{ url_for('main.home') }}" class="nav-item {% if request.path == '/' %}active{% endif %}">Home</a>
+            <a href="{{ url_for('clubs.clubs_directory') }}" class="nav-item {% if '/clubs' in request.path %}active{% endif %}">Clubs</a>
+            <a href="{{ url_for('conferences.conferences_list') }}" class="nav-item {% if '/conferences' in request.path %}active{% endif %}">Conferences</a>
         </div>
         <div class="nav-right">
             <a href="#" class="nav-item"><i class="fas fa-sign-in-alt"></i> Login</a>

@@ -136,23 +136,46 @@ def video_library(team):
     if club_info is None:
         return redirect(url_for('clubs_directory'))
     
-    # Get videos organized by season
-    videos_by_season = {}
+    # Get videos organized by conference and season
+    videos_by_conference = {}
     
-    for season in list_seasons(club_info['division'], club_info['conference']):
-        season_videos = get_club_videos(
-            club_info['division'], 
-            club_info['conference'], 
-            season, 
-            club_info['name']
-        )
-        if season_videos:
-            videos_by_season[season] = season_videos
+    # Current conference
+    current_conference = club_info['conference']
+    current_division = club_info['division']
+    
+    # List of conferences to check for this team
+    conferences_to_check = [current_conference]
+    
+    # If the current conference is "Midwest Central North", also check "Midwest Central"
+    if current_conference == "Midwest_Central_North":
+        conferences_to_check.append("Midwest_Central")
+    # If the current conference is "Midwest Central", also check "Midwest Central North"
+    elif current_conference == "Midwest_Central":
+        conferences_to_check.append("Midwest_Central_North")
+    
+    # For each conference, get all seasons and videos
+    for conference in conferences_to_check:
+        videos_by_season = {}
+        
+        for season in list_seasons(club_info['division'], conference):
+            season_videos = get_club_videos(
+                club_info['division'], 
+                conference,
+                season, 
+                club_info['name']
+            )
+            if season_videos:
+                videos_by_season[season] = season_videos
+        
+        if videos_by_season:
+            # Format conference name for display (replace underscores with spaces)
+            display_conference = conference.replace('_', ' ')
+            videos_by_conference[display_conference] = videos_by_season
     
     return render_template(
         'video_library.html',
         team=club_info,
-        videos_by_season=videos_by_season
+        videos_by_conference=videos_by_conference
     )
 
 @app.route('/clubs/<team>/annotateimg')
@@ -252,9 +275,6 @@ def api_competitions():
         for division in divisions:
             if division not in competitions:
                 competitions[division] = []
-                
-            # Add national championship for each division
-            competitions[division].append(f"{division} National Championship")
             
             # Add conferences as competitions
             conferences = list_conferences(division)

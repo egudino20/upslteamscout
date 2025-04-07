@@ -9,17 +9,23 @@
 {% block content %}
 <div class="club-container">
     <div class="club-header">
-        <h1>{{ team.name }}</h1>
-        <div class="club-info">
-            <span class="division">{{ team.division }}</span> | 
-            <span class="conference">{{ team.conference }}</span>
+        {% set logo_path = 'logos/' + team.division + '/' + team.conference + '/' + team.name + '.png' %}
+        <div class="club-logo">
+            <img src="{{ url_for('static', filename=logo_path) }}" alt="{{ team.name }} Logo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default_logo.png') }}'; this.alt='Default Logo'">
+        </div>
+        <div class="club-title">
+            <h1>{{ team.name }}</h1>
+            <div class="club-info">
+                <span class="division">{{ team.division }}</span> | 
+                <span class="conference">{{ team.conference }}</span>
+            </div>
         </div>
     </div>
 
     <div class="tabs-container">
         <div class="tabs">
-            <a href="{{ url_for('club_page', team=team.name) }}" class="tab active">Overview</a>
-            <a href="{{ url_for('video_library', team=team.name) }}" class="tab">Video Library</a>
+            <a href="{{ url_for('clubs.club_page', team=team.name) }}" class="tab active">Overview</a>
+            <a href="{{ url_for('videos.video_library', team=team.name) }}" class="tab">Video Library</a>
         </div>
     </div>
 
@@ -69,7 +75,7 @@
                     </div>
                 {% endif %}
                 <div class="see-all">
-                    <a href="{{ url_for('video_library', team=team.name) }}">See All Videos</a>
+                    <a href="{{ url_for('videos.video_library', team=team.name) }}">See All Videos</a>
                 </div>
             </div>
         </div>

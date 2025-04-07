@@ -9,42 +9,58 @@
 {% block content %}
 <div class="video-library-container">
     <div class="club-header">
-        <h1>{{ team.name }}</h1>
-        <div class="club-info">
-            <span class="division">{{ team.division }}</span> | 
-            <span class="conference">{{ team.conference }}</span>
+        {% set logo_path = 'logos/' + team.division + '/' + team.conference + '/' + team.name + '.png' %}
+        <div class="club-logo">
+            <img src="{{ url_for('static', filename=logo_path) }}" alt="{{ team.name }} Logo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default_logo.png') }}'; this.alt='Default Logo'">
+        </div>
+        <div class="club-title">
+            <h1>{{ team.name }}</h1>
+            <div class="club-info">
+                <span class="division">{{ team.division }}</span> | 
+                <span class="conference">{{ team.conference }}</span>
+            </div>
         </div>
     </div>
 
     <div class="tabs-container">
         <div class="tabs">
-            <a href="{{ url_for('club_page', team=team.name) }}" class="tab">Overview</a>
-            <a href="{{ url_for('video_library', team=team.name) }}" class="tab active">Video Library</a>
+            <a href="{{ url_for('clubs.club_page', team=team.name) }}" class="tab">Overview</a>
+            <a href="{{ url_for('videos.video_library', team=team.name) }}" class="tab active">Video Library</a>
         </div>
     </div>
 
     <div class="video-library-content">
         <div class="video-sidebar">
             <h2>Match Videos</h2>
-            <div class="season-list">
-                {% for season, videos in videos_by_season.items() %}
-                <div class="season-item">
-                    <div class="season-header" onclick="toggleSeason(this)">
+            <div class="conference-list">
+                {% for conference, seasons in videos_by_conference.items() %}
+                <div class="conference-item">
+                    <div class="conference-header" onclick="toggleConference(this)">
                         <i class="fas fa-chevron-right"></i>
-                        <span>{{ season }}</span>
+                        <span>{{ conference }}</span>
                     </div>
-                    <div class="season-videos">
-                        {% for video in videos %}
-                        <div class="video-item" onclick="loadVideo('{{ video.url }}', '{{ video.name }}')">
-                            <i class="fas fa-file-video"></i>
-                            <span>{{ video.name }}</span>
+                    <div class="conference-content">
+                        {% for season, videos in seasons.items() %}
+                        <div class="season-item">
+                            <div class="season-header" onclick="toggleSeason(this)">
+                                <i class="fas fa-chevron-right"></i>
+                                <span>{{ season }}</span>
+                            </div>
+                            <div class="season-videos">
+                                {% for video in videos %}
+                                <div class="video-item" onclick="loadVideo('{{ video.url }}', '{{ video.name }}')">
+                                    <i class="fas fa-file-video"></i>
+                                    <span>{{ video.name }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
                         </div>
                         {% endfor %}
                     </div>
                 </div>
                 {% endfor %}
                 
-                {% if not videos_by_season %}
+                {% if not videos_by_conference %}
                 <div class="no-videos">
                     <p>No videos available for this team</p>
                 </div>
@@ -93,6 +109,21 @@
     let isRecording = false;
     let currentVideoUrl = '';
     let videoTags = [];
+    
+    function toggleConference(element) {
+        const conferenceContent = element.nextElementSibling;
+        const icon = element.querySelector('i');
+        
+        if (conferenceContent.style.display === 'block') {
+            conferenceContent.style.display = 'none';
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-right');
+        } else {
+            conferenceContent.style.display = 'block';
+            icon.classList.remove('fa-chevron-right');
+            icon.classList.add('fa-chevron-down');
+        }
+    }
     
     function toggleSeason(element) {
         const seasonVideos = element.nextElementSibling;

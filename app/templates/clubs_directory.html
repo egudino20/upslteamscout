@@ -26,9 +26,14 @@
                 
                 <div class="teams-grid">
                     {% for team in teams %}
-                    <a href="{{ url_for('club_page', team=team) }}" class="team-card">
+                    <a href="{{ url_for('clubs.club_page', team=team) }}" class="team-card">
                         <div class="team-logo">
+                            {% set logo_path = 'logos/' + division + '/' + conference + '/' + team + '.png' %}
+                            {% if division and conference %}
+                            <img src="{{ url_for('static', filename=logo_path) }}" alt="{{ team }} Logo" onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default_logo.png') }}'; this.alt='Default Logo'">
+                            {% else %}
                             <i class="fas fa-shield-alt"></i>
+                            {% endif %}
                         </div>
                         <h4 class="team-name">{{ team }}</h4>
                     </a>

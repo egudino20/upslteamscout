@@ -1,0 +1,97 @@
+
+---
+description: Best practices to implement for the tech stack used in UPSLTeamScout
+globs: 
+alwaysApply: true
+---
+
+Before diving into the best practices, please note that you may need to adapt the globs depending on your specific project structure.
+
+---
+name: flask-best-practices.mdc
+description: Best practices for Flask applications and routing
+globs: **/*.py
+---
+
+- Use Blueprints for modularizing routes and application structure
+- Set up environment-based configuration (dev, staging, prod)
+- Implement error handlers for consistent error responses
+- Validate request payloads using `pydantic` or `marshmallow`
+- Use Flask extensions like `Flask-CORS`, `Flask-Login`, `Flask-Migrate` properly
+
+---
+name: gcs-best-practices.mdc
+description: Best practices for interacting with Google Cloud Storage
+globs: **/*.py
+---
+
+- Use the official `google-cloud-storage` client with service account credentials
+- Store credentials securely and access via environment variables
+- Organize bucket structure by project → season → division → club
+- Use signed URLs for secure, time-limited access to videos
+
+---
+name: supabase-best-practices.mdc
+description: Best practices for using Supabase in your backend
+globs: **/*.py
+---
+
+- Use Supabase Python client with service role key (backend only)
+- Secure sensitive API endpoints using Supabase JWT validation
+- Organize Supabase tables logically: users, matches, players, events
+- Cache frequent reads with local or cloud cache (e.g. Redis, Memory)
+
+---
+name: video-processing-best-practices.mdc
+description: Best practices for video analysis and processing
+globs: **/*.py
+---
+
+- Use YOLOv8 with confidence and NMS thresholds optimized for video
+- Offload processing-heavy tasks to background jobs (e.g., Celery, RQ)
+- Save intermediate data (tracking results, cropped images) for reuse
+- Log pipeline output and errors for reproducibility and debugging
+
+---
+name: python-best-practices.mdc
+description: Python coding standards and maintainability
+globs: **/*.py
+---
+
+- Follow PEP8 and use tools like Black or Ruff for linting/formatting
+- Use type hints and enforce with `mypy`
+- Organize modules using services, utils, routes, and models folders
+- Write unit tests for all core functions using `pytest`
+
+---
+name: deployment-best-practices.mdc
+description: Deployment and CI/CD with Render
+globs: **/*.py
+---
+
+- Add a `render.yaml` for infrastructure-as-code setup
+- Use environment groups for consistent secrets management
+- Deploy from `main` branch with auto-deploy enabled
+- Monitor logs and metrics from the Render dashboard
+
+---
+name: security-best-practices.mdc
+description: Security best practices for APIs and cloud infrastructure
+globs: **/*.py
+---
+
+- Use HTTPS for all endpoints, especially when serving signed video URLs
+- Rotate service keys periodically and revoke old ones
+- Rate-limit API endpoints to prevent abuse
+- Validate and sanitize all user inputs
+
+---
+name: roadmap-and-scalability.mdc
+description: Suggestions to keep in mind for scaling UPSLTeamScout
+globs: **/*.md
+---
+
+- Move compute-heavy processing (event detection, tracking) to background workers
+- Consider PostgreSQL or BigQuery for complex analytical workloads
+- Use GCS lifecycle rules to archive older video files
+- Monitor usage and introduce feature flags for experimental features

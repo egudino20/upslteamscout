@@ -1,11 +1,15 @@
 import os
 
-# Google Cloud configuration
-# Remove the hardcoded path since we handle credentials in app.py
-# GCP_CREDENTIAL_FILE = "upsl-video-api-c5071e2d09bf.json"
-GCP_BUCKET_VIDEOS = "upsl_match_videos"
-GCP_BUCKET_STATS = "upsl_match_stats"
+# Security
+SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-key-for-local-development')
 
-# Flask configuration
-SECRET_KEY = os.urandom(24)
-DEBUG = True
+# Environment settings
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+
+# Google Cloud Storage
+GCP_BUCKET_VIDEOS = os.environ.get('GCP_BUCKET_VIDEOS', 'upsl_match_videos')
+GCP_BUCKET_STATS = os.environ.get('GCP_BUCKET_STATS', 'upsl_match_stats')
+
+# Supabase (Future implementation)
+SUPABASE_URL = os.environ.get('SUPABASE_URL', '')
+SUPABASE_KEY = os.environ.get('SUPABASE_KEY', '')

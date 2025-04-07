@@ -23,6 +23,7 @@ var/
 # Virtual Environment
 venv/
 ENV/
+.env
 
 # IDE specific files
 .idea/
@@ -34,11 +35,22 @@ ENV/
 instance/
 .webassets-cache
 
-# Credentials
+# Application specific
+credentials/
+app/cache/
+app/static/logos/*
+!app/static/logos/.gitkeep
+app/static/annotations/
+app/static/clips/
+app/static/images/default_logo.png
+app/static/images/soccer_field.jpg
 upsl-video-api-*.json
-
-# Cache
-cache/
+google-credentials-temp.json
 
 # Logs
 *.log
+logs/
+
+# OS specific files
+.DS_Store
+Thumbs.db

@@ -45,17 +45,24 @@
 .club-icon {
     width: 70px;
     height: 70px;
-    background-color: #3498db;
+    background-color: #f5f5f5;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 15px;
+    overflow: hidden;
+}
+
+.club-icon img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
 }
 
 .club-icon i {
     font-size: 32px;
-    color: white;
+    color: #3498db;
 }
 
 .club-name {
