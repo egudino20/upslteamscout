@@ -38,8 +38,6 @@ instance/
 # Application specific
 credentials/
 app/cache/
-app/static/logos/*
-!app/static/logos/.gitkeep
 app/static/annotations/
 app/static/clips/
 app/static/images/default_logo.png
