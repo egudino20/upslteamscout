@@ -39,9 +39,13 @@ def video_library(team):
     # If the current conference is "Midwest Central North", also check "Midwest Central"
     if current_conference == "Midwest_Central_North":
         conferences_to_check.append("Midwest_Central")
-    # If the current conference is "Midwest Central", also check "Midwest Central North"
+    # If the current conference is "Midwest Central", also check both North and South variants
     elif current_conference == "Midwest_Central":
         conferences_to_check.append("Midwest_Central_North")
+        conferences_to_check.append("Midwest_Central_South")
+    # If the current conference is "Midwest Central South", also check "Midwest Central"
+    elif current_conference == "Midwest_Central_South":
+        conferences_to_check.append("Midwest_Central")
     
     # For each conference, get all seasons and videos
     for conference in conferences_to_check:
